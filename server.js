@@ -1,5 +1,5 @@
 const argv = require('optimist')
-            .default('db_name','my_base')
+            .default('db_name','sistemacventa')
             .default('db_port','27017')
             .default('db_ip','localhost')
             .default('serve_ip','localhost')
