@@ -5,33 +5,30 @@ const argv = require('optimist')
             .default('serve_ip','localhost')
             .default('serve_port','80')
             .argv;
-const express = require('express');
-const http = require('http');
-const app = express();
-const server = http.createServer(app);
-const mongoose = require('mongoose');
+import express from 'express';
+//const express = require('express');
+import morgan from 'morgan';
+//const morgan = require('morgan');
+import cors from 'cors';
+//const cors = require('cors');
+import path from 'path'; // requerir para que los metodos estaticos sean publicos
+import mongoose from 'mongoose';
+import router from './routes';
+
+
 mongoose.connect('mongodb://'+argv.db_ip+':'+argv.db_port+'/'+argv.db_name, {useNewUrlParser: true,useFindAndModify: false});
 
-//Models
-let User = require('./models/User')(mongoose);
 
-//Middlewares
+const app = express();
+app.use(morgan('dev'));
+app.use(cors());
+
+//recibir pediciones json
 app.use(express.json());
+app.use(express.urlencoded({extended:true}));
+app.use(express.static(path.join(__dirname,'public')));
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method,user,token');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
-    next();
-});
-
-//controllers
-let UserC = require('./controllers/UserController')(app,User);
-
-//archivos estaticos
-app.use('/',express.static('public'));
-
+app.use('/api',router);
 //run server
 server.listen(argv.serve_port,argv.serve_ip,() => {
     console.log("Server corriendo en el puerto: " + argv.serve_port);
